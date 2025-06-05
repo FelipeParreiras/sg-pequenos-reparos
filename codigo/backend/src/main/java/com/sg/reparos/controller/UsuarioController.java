@@ -1,13 +1,16 @@
 package com.sg.reparos.controller;
 
+import com.sg.reparos.dto.UsuarioUpdateDTO;
 import com.sg.reparos.model.Usuario;
 import com.sg.reparos.service.UsuarioService;
+import com.sg.reparos.repository.UsuarioRepository;
 
 import jakarta.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +21,8 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @GetMapping
     public List<Usuario> listarUsuarios() {
@@ -32,6 +37,14 @@ public class UsuarioController {
     @PostMapping
     public Usuario criarUsuario(@RequestBody @Valid Usuario usuario) {
         return usuarioService.salvarUsuario(usuario);
+    }
+
+    @PutMapping("/perfil")
+    public Usuario atualizarUsuario(@Valid @RequestBody UsuarioUpdateDTO dto, Principal principal) {
+    Usuario usuario = usuarioRepository.findByUsername(principal.getName())
+        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+    return usuarioService.atualizarUsuario(usuario.getId(), dto);
     }
 
     @DeleteMapping("/{id}")
