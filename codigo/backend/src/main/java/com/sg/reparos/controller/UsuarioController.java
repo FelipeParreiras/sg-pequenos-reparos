@@ -2,6 +2,9 @@ package com.sg.reparos.controller;
 
 import com.sg.reparos.model.Usuario;
 import com.sg.reparos.service.UsuarioService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +30,7 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario salvarUsuario(@RequestBody Usuario usuario) {
+    public Usuario criarUsuario(@RequestBody @Valid Usuario usuario) {
         return usuarioService.salvarUsuario(usuario);
     }
 
