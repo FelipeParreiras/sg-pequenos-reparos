@@ -7,7 +7,7 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      <Link to="/">Home</Link>
+      <Link to="/">SG Pequenos Reparos</Link>
       {!isAuthenticated ? (
         <>
           <Link to="/cadastro">Cadastro</Link>

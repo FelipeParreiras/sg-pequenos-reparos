@@ -5,7 +5,7 @@ import CadastroPage from './pages/CadastroPage';
 import LoginPage from './pages/LoginPage';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
-import PerfilPage from './pages/Perfil';
+import Perfil from './pages/Perfil';
 
 function App() {
   return (
@@ -20,7 +20,7 @@ function App() {
             path="/perfil"
             element={
               <PrivateRoute>
-                <PerfilPage />
+                <Perfil />
               </PrivateRoute>
             }
           />
@@ -29,7 +29,6 @@ function App() {
     </AuthProvider>
   );
 }
-
 
 export default App;
 

@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 
-const PerfilPage = () => {
+const Perfil = () => {
   const { username, logout } = useContext(AuthContext);
 
   const handleLogout = () => {
@@ -16,4 +16,4 @@ const PerfilPage = () => {
   );
 };
 
-export default PerfilPage;
+export default Perfil;

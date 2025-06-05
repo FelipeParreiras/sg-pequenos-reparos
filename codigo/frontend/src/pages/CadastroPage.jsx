@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import axios from 'axios';
+import { register } from '../services/AuthService';
+import { useNavigate } from 'react-router-dom';
 import Input from '../components/Input';
 import Button from '../components/Button';
 
 const CadastroPage = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -13,47 +16,36 @@ const CadastroPage = () => {
     senha: ''
   });
 
+  const [error, setError] = useState('');
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
-      await axios.post('http://localhost:8080/api/usuarios', formData);
+      await register(formData);
       alert('Cadastro realizado com sucesso!');
-    } catch (error) {
-      alert('Erro no cadastro. Tente novamente.');
+      navigate('/login'); // redireciona para login após cadastro
+    } catch (err) {
+      setError('Erro no cadastro. Verifique seus dados e tente novamente.');
     }
   };
 
   return (
-    <div className="cadastro-container">
+    <div>
       <h2>Cadastro</h2>
-      <form onSubmit={handleSubmit} className="cadastro-form">
-        <div className="form-group">
-          <Input label="Nome" name="nome" value={formData.nome} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <Input label="Email" name="email" value={formData.email} onChange={handleChange} required type="email" />
-        </div>
-        <div className="form-group">
-          <Input label="Telefone" name="telefone" value={formData.telefone} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <Input label="Username" name="username" value={formData.username} onChange={handleChange} required />
-        </div>
-        <div className="form-group">
-          <label>Tipo:</label><br />
-          <select name="tipo" value={formData.tipo} onChange={handleChange} className="form-select">
-            <option value="CLIENTE">Cliente</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <Input label="Senha" name="senha" value={formData.senha} onChange={handleChange} required type="password" />
-        </div>
-        <Button type="submit" className="form-button">Cadastrar</Button>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <Input label="Nome" name="nome" value={formData.nome} onChange={handleChange} required />
+        <Input label="Email" name="email" value={formData.email} onChange={handleChange} required type="email" />
+        <Input label="Telefone" name="telefone" value={formData.telefone} onChange={handleChange} required />
+        <Input label="Nome de Usuário" name="username" value={formData.username} onChange={handleChange} required />
+        <Input label="Senha" name="senha" value={formData.senha} onChange={handleChange} required type="password" />
+        <Button type="submit">Cadastrar</Button>
       </form>
     </div>
   );

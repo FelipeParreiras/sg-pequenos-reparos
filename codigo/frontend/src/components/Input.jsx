@@ -3,7 +3,8 @@ import React from 'react';
 const Input = ({ label, name, value, onChange, type = "text", required = false }) => {
   return (
     <>
-      <label>{label}:</label><br />
+    <div className="inputDiv">
+      <label>{label}:</label>
       <input
         type={type}
         name={name}
@@ -12,6 +13,7 @@ const Input = ({ label, name, value, onChange, type = "text", required = false }
         required={required}
         className="form-input"
       />
+    </div>
     </>
   );
 };
