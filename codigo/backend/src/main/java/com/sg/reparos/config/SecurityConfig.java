@@ -24,18 +24,20 @@ public class SecurityConfig {
     @Autowired
     private UsuarioDetailsServiceImpl userDetailsService;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/login", "/api/usuarios").permitAll()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+@Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/auth/login", "/api/usuarios").permitAll()
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")  // 👈 Somente ADMIN
+            .requestMatchers("/api/cliente/**").hasRole("CLIENTE") // 👈 Somente CLIENTE
+            .anyRequest().authenticated()
+        )
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+    return http.build();
+}
 
     @Bean
     public PasswordEncoder passwordEncoder() {
