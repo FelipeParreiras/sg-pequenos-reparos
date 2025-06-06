@@ -3,18 +3,31 @@ package com.sg.reparos.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    @Value("${jwt.secret}")
+    private String secret;
 
-    private final long expirationTime = 1000 * 60 * 30;
+    @Value("${jwt.expiration}")
+    private long expirationTime;
+
+    private Key key;
+
+    @PostConstruct
+    public void init() {
+        byte[] secretBytes = Base64.getDecoder().decode(secret);
+        this.key = new SecretKeySpec(secretBytes, SignatureAlgorithm.HS256.getJcaName());
+    }
 
     public String generateToken(String username) {
         return Jwts.builder()
@@ -47,3 +60,4 @@ public class JwtUtil {
                 .getBody();
     }
 }
+
