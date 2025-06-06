@@ -1,4 +1,5 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState } from 'react';
+import { getUserProfile } from '../services/AuthService'; // importa o serviço novo
 
 export const AuthContext = createContext();
 
@@ -6,39 +7,32 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [token, setToken] = useState('');
+  const [user, setUser] = useState(null); // Novo: guarda os dados completos do usuário
 
-  useEffect(() => {
-    // Checa se já tem token no localStorage ao abrir o app
-    const savedToken = localStorage.getItem('token');
-    const savedUsername = localStorage.getItem('username');
-
-    if (savedToken && savedUsername) {
-      setToken(savedToken);
-      setUsername(savedUsername);
-      setIsAuthenticated(true);
+  const fetchUserProfile = async () => {
+    try {
+      const profile = await getUserProfile(); // chama a API
+      setUser(profile); // salva no state
+    } catch (error) {
+      console.error('Erro ao buscar perfil do usuário:', error);
     }
-  }, []);
+  };
 
-  const login = (username, token) => {
+  const login = async (username, token) => {
     setIsAuthenticated(true);
     setUsername(username);
-    setToken(token);
 
-    localStorage.setItem('token', token);
-    localStorage.setItem('username', username);
+    await fetchUserProfile(); // Assim que logar, pega o perfil
   };
 
   const logout = () => {
     setIsAuthenticated(false);
     setUsername('');
-    setToken('');
-
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
+    setUser(null); // limpa o perfil
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, username, token, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, username, token, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

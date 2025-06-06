@@ -24,6 +24,10 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
+    public Optional<Usuario> findByUsername(String username) {
+        return usuarioRepository.findByUsername(username);
+    }
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -33,27 +37,27 @@ public class UsuarioService {
     }
 
     public Usuario atualizarUsuario(Long id, UsuarioUpdateDTO dto) {
-    Usuario usuario = usuarioRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-    // Verificar se o username está mudando
-    if (!usuario.getUsername().equals(dto.getUsername())) {
-        boolean usernameExists = usuarioRepository.existsByUsername(dto.getUsername());
-        if (usernameExists) {
-            throw new RuntimeException("Username já está em uso por outro usuário");
+        // Verificar se o username está mudando
+        if (!usuario.getUsername().equals(dto.getUsername())) {
+            boolean usernameExists = usuarioRepository.existsByUsername(dto.getUsername());
+            if (usernameExists) {
+                throw new RuntimeException("Username já está em uso por outro usuário");
+            }
+            usuario.setUsername(dto.getUsername());
         }
-        usuario.setUsername(dto.getUsername());
-    }
 
-    usuario.setNome(dto.getNome());
-    usuario.setEmail(dto.getEmail());
-    usuario.setTelefone(dto.getTelefone());
+        usuario.setNome(dto.getNome());
+        usuario.setEmail(dto.getEmail());
+        usuario.setTelefone(dto.getTelefone());
 
-    if (dto.getSenha() != null && !dto.getSenha().isEmpty()) {
-        usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
-    }
+        if (dto.getSenha() != null && !dto.getSenha().isEmpty()) {
+            usuario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
 
-    return usuarioRepository.save(usuario);
+        return usuarioRepository.save(usuario);
     }
 
     public void deletarUsuario(Long id) {

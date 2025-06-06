@@ -34,6 +34,12 @@ public class UsuarioController {
         return usuarioService.buscarPorId(id);
     }
 
+    @GetMapping("/perfil")
+    public Usuario buscarPerfilUsuario(Principal principal) {
+        return usuarioService.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
+
     @PostMapping
     public Usuario criarUsuario(@RequestBody @Valid Usuario usuario) {
         return usuarioService.salvarUsuario(usuario);
@@ -41,10 +47,10 @@ public class UsuarioController {
 
     @PutMapping("/perfil")
     public Usuario atualizarUsuario(@Valid @RequestBody UsuarioUpdateDTO dto, Principal principal) {
-    Usuario usuario = usuarioRepository.findByUsername(principal.getName())
-        .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+        Usuario usuario = usuarioRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-    return usuarioService.atualizarUsuario(usuario.getId(), dto);
+        return usuarioService.atualizarUsuario(usuario.getId(), dto);
     }
 
     @DeleteMapping("/{id}")

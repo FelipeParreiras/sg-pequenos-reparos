@@ -1,8 +1,14 @@
-import { useContext } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
+import { useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext";
+import { useState } from "react";
+import Button from "../components/Button";
+import EditUserModal from "../components/EditUserModal";
+import UserField from "../components/UserField";
 
 const Perfil = () => {
-  const { username, logout } = useContext(AuthContext);
+  const { user, username, logout } = useContext(AuthContext);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -11,7 +17,21 @@ const Perfil = () => {
   return (
     <div>
       <h1>Perfil de {username}</h1>
-      <button onClick={handleLogout}>Logout</button>
+      {user ? (
+        <div className="boxDadosDoUsuario">
+          <UserField label="Nome" value={user.nome} />
+          <UserField label="Email" value={user.email} />
+          <UserField label="Telefone" value={user.telefone} />
+        </div>
+      ) : (
+        <p>Carregando dados do usuário...</p> // ou pode mostrar um loading spinner
+      )}
+      <Button onClick={handleLogout}>Sair</Button>
+      <Button onClick={() => setIsModalOpen(true)}>Editar</Button>
+
+      {isModalOpen && (
+        <EditUserModal user={user} onClose={() => setIsModalOpen(false)} />
+      )}
     </div>
   );
 };
