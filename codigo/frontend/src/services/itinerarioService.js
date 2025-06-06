@@ -1,10 +1,10 @@
-import api from './api'; // sua instância já configurada com baseURL
+import api from './api'; // sua instância axios configurada com baseURL
 
-// Pega o itinerário atual do usuário/admin
-const getItinerario = () => api.get('/itinerario'); 
+// Obtém o itinerário do usuário logado
+const getItinerario = () => api.get('/itinerarios/meu-itinerario');
 
-// Salva ou atualiza o itinerário
-const saveItinerario = (dados) => api.post('/itinerario', dados); 
+// Salva ou atualiza o itinerário do usuário logado
+const saveItinerario = (dados) => api.post('/itinerarios', dados);
 
 export {
   getItinerario,
