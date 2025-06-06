@@ -9,6 +9,7 @@ import Perfil from "./pages/Perfil";
 import PainelAdmin from "./pages/admin/PainelAdmin";
 import ServicosPage from "./pages/ServicosPage";
 import HistoricoServicosPage from "./pages/HistoricoServicosPage";
+import ServicoAdminPage from "./pages/admin/ServicoAdminPage";
 
 function App() {
   return (
@@ -32,6 +33,14 @@ function App() {
             element={
               <PrivateRoute>
                 <PainelAdmin />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/servicos"
+            element={
+              <PrivateRoute>
+                <ServicoAdminPage />
               </PrivateRoute>
             }
           />
