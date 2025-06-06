@@ -1,11 +1,12 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import LandingPage from './pages/LandingPage';
-import CadastroPage from './pages/CadastroPage';
-import LoginPage from './pages/LoginPage';
-import { AuthProvider } from './contexts/AuthContext';
-import PrivateRoute from './components/PrivateRoute';
-import Perfil from './pages/Perfil';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import LandingPage from "./pages/LandingPage";
+import CadastroPage from "./pages/CadastroPage";
+import LoginPage from "./pages/LoginPage";
+import { AuthProvider } from "./contexts/AuthContext";
+import PrivateRoute from "./components/PrivateRoute";
+import Perfil from "./pages/Perfil";
+import PainelAdmin from "./pages/admin/PainelAdmin";
 
 function App() {
   return (
@@ -24,6 +25,14 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/admin/painel"
+            element={
+              <PrivateRoute>
+                <PainelAdmin />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </Router>
     </AuthProvider>
@@ -31,4 +40,3 @@ function App() {
 }
 
 export default App;
-

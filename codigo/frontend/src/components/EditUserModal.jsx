@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { updateUser } from '../services/AuthService';
+import { updateUser } from '../services/authService';
 import Input from '../components/Input';
 import Button from '../components/Button';
+import UserField from '../components/UserField';
 
-const EditUserModal = ({ user, onClose }) => {
+const EditUserModal = ({ user = {}, onClose }) => {
   const [formData, setFormData] = useState({
     nome: user.nome || '',
     email: user.email || '',
@@ -13,7 +14,7 @@ const EditUserModal = ({ user, onClose }) => {
   });
 
   const handleChange = (e) => {
-    setFormData({...formData, [e.target.name]: e.target.value});
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
@@ -21,7 +22,7 @@ const EditUserModal = ({ user, onClose }) => {
     try {
       await updateUser(formData);
       alert('Perfil atualizado com sucesso!');
-      onClose();
+      onClose(); // Apenas fecha o modal
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
       alert('Falha ao atualizar perfil!');
@@ -38,11 +39,10 @@ const EditUserModal = ({ user, onClose }) => {
         <Input label="Nome" name="nome" value={formData.nome} onChange={handleChange} required />
         <Input label="Email" name="email" value={formData.email} onChange={handleChange} required type="email" />
         <Input label="Telefone" name="telefone" value={formData.telefone} onChange={handleChange} required />
-        <Input label="Nome de Usuário" name="username" value={formData.username} onChange={handleChange} required />
+        <UserField label="Nome de Usuário" value={formData.username} />
         <Input label="Senha" name="senha" value={formData.senha} onChange={handleChange} required type="password" />
-        .
-        <Button type="submit">Salvar</Button>
-        <Button type="button" onClick={onClose}>Cancelar</Button>
+        <Button variant="salvar" type="submit">Salvar</Button>
+        <Button variant="cancelar" onClick={onClose}>Cancelar</Button>
       </form>
     </div>
   );

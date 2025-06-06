@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { AuthContext } from "../contexts/AuthContext";
-import { login as loginService } from "../services/AuthService";
+import { login as loginService } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
@@ -50,7 +50,7 @@ const LoginPage = () => {
           onChange={handleChange}
           required
         />
-        <Button type="submit">Entrar</Button>
+        <Button type="submit" variant="entrar">Entrar</Button>
       </form>
     </div>
   );

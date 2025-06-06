@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { register } from '../services/AuthService';
+import { register } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import Input from '../components/Input';
 import Button from '../components/Button';
@@ -45,7 +45,7 @@ const CadastroPage = () => {
         <Input label="Telefone" name="telefone" value={formData.telefone} onChange={handleChange} required />
         <Input label="Nome de Usuário" name="username" value={formData.username} onChange={handleChange} required />
         <Input label="Senha" name="senha" value={formData.senha} onChange={handleChange} required type="password" />
-        <Button type="submit">Cadastrar</Button>
+        <Button type="submit" variant="cadastrar">Cadastrar</Button>
       </form>
     </div>
   );
