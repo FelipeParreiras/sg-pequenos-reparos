@@ -7,7 +7,7 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
-  const [token, setToken] = useState('');
+  const [token] = useState('');
   const [user, setUser] = useState(null);
 
   const fetchUserProfile = async () => {

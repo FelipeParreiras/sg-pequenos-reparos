@@ -1,6 +1,6 @@
-import { useContext } from 'react';
-import { AuthContext } from '../contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { useContext } from "react";
+import { AuthContext } from "../contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const { isAuthenticated, username, user } = useContext(AuthContext); // tipo: ADMIN ou CLIENTE
@@ -16,8 +16,14 @@ const Navbar = () => {
         </>
       ) : (
         <>
-          {user?.tipo === 'ADMIN' && (
-            <Link to="/admin/painel">Painel</Link>
+          {user?.tipo === "ADMIN" && (
+            <>
+              <Link to="/admin/painel">Painel</Link>
+              <Link to="/admin/servicos">Serviços</Link>
+            </>
+          )}
+          {user?.tipo === "CLIENTE" && (
+            <Link to="/cliente/servicos">Serviços</Link>
           )}
           <Link to="/perfil">Olá, {username}!</Link>
         </>
