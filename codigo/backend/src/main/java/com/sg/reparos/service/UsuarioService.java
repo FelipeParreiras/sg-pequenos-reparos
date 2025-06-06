@@ -66,16 +66,7 @@ public class UsuarioService {
     public Usuario atualizarUsuario(Long id, UsuarioUpdateDTO dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        // Verificar se o username está mudando
-        if (!usuario.getUsername().equals(dto.getUsername())) {
-            boolean usernameExists = usuarioRepository.existsByUsername(dto.getUsername());
-            if (usernameExists) {
-                throw new RuntimeException("Username já está em uso por outro usuário");
-            }
-            usuario.setUsername(dto.getUsername());
-        }
-
+                
         usuario.setNome(dto.getNome());
         usuario.setEmail(dto.getEmail());
         usuario.setTelefone(dto.getTelefone());

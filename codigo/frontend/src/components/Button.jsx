@@ -1,11 +1,11 @@
 import React from 'react';
 
-const Button = ({ children, type = "button", onClick }) => {
+const Button = ({ children, type = "button", variant = "default", onClick }) => {
   return (
     <button
       type={type}
       onClick={onClick}
-      className="form-button"
+      className={`btn ${variant}`} // Adiciona classe dinâmica
     >
       {children}
     </button>

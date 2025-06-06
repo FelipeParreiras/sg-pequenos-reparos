@@ -26,8 +26,8 @@ const Perfil = () => {
       ) : (
         <p>Carregando dados do usuário...</p> // ou pode mostrar um loading spinner
       )}
-      <Button onClick={handleLogout}>Sair</Button>
-      <Button onClick={() => setIsModalOpen(true)}>Editar</Button>
+      <Button variant="sair" onClick={handleLogout}>Sair</Button>
+      <Button variant="editar" onClick={() => setIsModalOpen(true)}>Editar</Button>
 
       {isModalOpen && (
         <EditUserModal user={user} onClose={() => setIsModalOpen(false)} />

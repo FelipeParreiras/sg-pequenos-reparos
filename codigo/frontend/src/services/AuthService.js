@@ -11,7 +11,7 @@ export const login = async (username, senha) => {
 };
 
 export const getUserProfile = async () => {
-  const response = await api.get('/usuarios/perfil'); // endpoint que pega o perfil atual
+  const response = await api.get('/usuarios/perfil');
   return response.data;
 };
 
@@ -21,6 +21,6 @@ export const updateUser = async (userData) => {
 }
 
 export const register = async (userData) => {
-  const response = await api.post('/usuarios', userData);
+  const response = await api.post('/usuarios/cadastro', userData);
   return response.data;
 };
