@@ -7,6 +7,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import PrivateRoute from "./components/PrivateRoute";
 import Perfil from "./pages/Perfil";
 import PainelAdmin from "./pages/admin/PainelAdmin";
+import ServicosPage from "./pages/ServicosPage";
+import HistoricoServicosPage from "./pages/HistoricoServicosPage";
 
 function App() {
   return (
@@ -30,6 +32,22 @@ function App() {
             element={
               <PrivateRoute>
                 <PainelAdmin />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/cliente/servicos"
+            element={
+              <PrivateRoute>
+                <ServicosPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/cliente/historico"
+            element={
+              <PrivateRoute>
+                <HistoricoServicosPage />
               </PrivateRoute>
             }
           />

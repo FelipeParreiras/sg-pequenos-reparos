@@ -19,6 +19,9 @@ const Navbar = () => {
           {user?.tipo === 'ADMIN' && (
             <Link to="/admin/painel">Painel</Link>
           )}
+          {user?.tipo === 'CLIENTE' && (
+            <Link to="/cliente/servicos">Serviços</Link>
+          )}
           <Link to="/perfil">Olá, {username}!</Link>
         </>
       )}
