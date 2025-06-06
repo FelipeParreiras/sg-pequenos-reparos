@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { listarTipos } from '../../services/tipoService';
+import { listarTipos, deletarTipo } from '../../services/tipoService';
 import EditTipoModal from '../EditTipoModal';
 
 const PainelTipoServicos = () => {
@@ -14,7 +14,7 @@ const PainelTipoServicos = () => {
 
   const carregarTipos = async () => {
     try {
-      const response = await listarTipos(); // Aqui temporário
+      const response = await listarTipos();
       setTipos(response.data);
     } catch (error) {
       console.error('Erro ao listar tipos:', error);
@@ -40,6 +40,18 @@ const PainelTipoServicos = () => {
     carregarTipos(); // Recarrega a lista após add/edit
   };
 
+  const handleExcluir = async (id, nome) => {
+    if (window.confirm(`Confirma exclusão do tipo "${nome}"?`)) {
+      try {
+        await deletarTipo(id);
+        carregarTipos();
+      } catch (error) {
+        console.error('Erro ao excluir tipo:', error);
+        alert('Não foi possível excluir o tipo.');
+      }
+    }
+  };
+
   return (
     <div className="painel-tipo-servicos-container">
       <div className="painel-tipo-servicos-header">
@@ -61,6 +73,8 @@ const PainelTipoServicos = () => {
         <thead>
           <tr>
             <th>Nome</th>
+            <th>Descrição</th>
+            <th>Duração (min)</th>
             <th>Ações</th>
           </tr>
         </thead>
@@ -68,12 +82,25 @@ const PainelTipoServicos = () => {
           {tiposFiltrados.map(tipo => (
             <tr key={tipo.id}>
               <td>{tipo.nome}</td>
+              <td>{tipo.descricao || '-'}</td>
+              <td>{tipo.duracao}</td>
               <td>
                 <button className="btn-editar" onClick={() => abrirModal(tipo)}>Editar</button>
-                {/* Botão Excluir futuro se precisar */}
+                <button
+                  className="btn-excluir"
+                  onClick={() => handleExcluir(tipo.id, tipo.nome)}
+                  style={{ marginLeft: 8 }}
+                >
+                  Excluir
+                </button>
               </td>
             </tr>
           ))}
+          {tiposFiltrados.length === 0 && (
+            <tr>
+              <td colSpan="4" style={{ textAlign: 'center' }}>Nenhum tipo encontrado.</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
