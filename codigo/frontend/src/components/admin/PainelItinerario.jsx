@@ -1,41 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { getItinerario, saveItinerario } from '../../services/itinerarioService'; // ajuste o caminho conforme necessário
 
 const diasDaSemana = [
-  'Segunda-feira',
-  'Terça-feira',
-  'Quarta-feira',
-  'Quinta-feira',
-  'Sexta-feira',
-  'Sábado',
-  'Domingo',
+  { label: 'Domingo', valor: 1 },
+  { label: 'Segunda-feira', valor: 2 },
+  { label: 'Terça-feira', valor: 3 },
+  { label: 'Quarta-feira', valor: 4 },
+  { label: 'Quinta-feira', valor: 5 },
+  { label: 'Sexta-feira', valor: 6 },
+  { label: 'Sábado', valor: 7 },
 ];
 
 const PainelItinerario = () => {
-  const [tipo, setTipo] = useState('SEMANAL'); // SEMANAL ou CICLICO
+  const [tipo, setTipo] = useState('FIXO'); // 'FIXO' ou 'CICLICO'
   const [diasSelecionados, setDiasSelecionados] = useState([]);
   const [diasTrabalho, setDiasTrabalho] = useState(4);
   const [diasFolga, setDiasFolga] = useState(4);
+  const [horaInicio, setHoraInicio] = useState('08:00');
+  const [horaFim, setHoraFim] = useState('17:00');
   const [observacao, setObservacao] = useState('');
 
-  const toggleDia = (dia) => {
-    if (diasSelecionados.includes(dia)) {
-      setDiasSelecionados(diasSelecionados.filter(d => d !== dia));
+  // Função para formatar hora no padrão HH:mm:ss
+  const formatarHora = (hora) => `${hora}:00`;
+
+  const toggleDia = (valor) => {
+    if (diasSelecionados.includes(valor)) {
+      setDiasSelecionados(diasSelecionados.filter(d => d !== valor));
     } else {
-      setDiasSelecionados([...diasSelecionados, dia]);
+      setDiasSelecionados([...diasSelecionados, valor]);
     }
   };
 
+  // Carrega itinerário do backend ao montar componente
+  useEffect(() => {
+    getItinerario()
+      .then(({ data }) => {
+        if (data) {
+          setTipo(data.tipoItinerario);
+          if (data.tipoItinerario === 'FIXO') {
+            setDiasSelecionados(data.diasSemana || []);
+          } else {
+            setDiasTrabalho(data.diasTrabalho || 4);
+            setDiasFolga(data.diasFolga || 4);
+          }
+          setHoraInicio(data.horaInicio ? data.horaInicio.slice(0,5) : '08:00');
+          setHoraFim(data.horaFim ? data.horaFim.slice(0,5) : '17:00');
+        }
+      })
+      .catch(() => {
+        // pode exibir mensagem ou ignorar se não existir ainda
+      });
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
     const config = {
-      tipo,
-      dias: tipo === 'SEMANAL' ? diasSelecionados : [],
+      tipoItinerario: tipo,
+      diasSemana: tipo === 'FIXO' ? diasSelecionados : null,
       diasTrabalho: tipo === 'CICLICO' ? diasTrabalho : null,
       diasFolga: tipo === 'CICLICO' ? diasFolga : null,
-      observacao,
+      horaInicio: formatarHora(horaInicio),
+      horaFim: formatarHora(horaFim),
+      observacao
     };
-    console.log('Configuração enviada:', config);
-    // 🚀 Futuro: Aqui chamaremos o itinerarioService
+
+    saveItinerario(config)
+      .then(() => {
+        alert('Itinerário salvo com sucesso!');
+      })
+      .catch((error) => {
+        alert('Erro ao salvar itinerário: ' + (error.response?.data?.message || error.message));
+      });
   };
 
   return (
@@ -45,23 +81,23 @@ const PainelItinerario = () => {
         <div className="form-group">
           <label>Tipo de Configuração:</label>
           <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="select-tipo">
-            <option value="SEMANAL">Dias Fixos da Semana</option>
+            <option value="FIXO">Dias Fixos da Semana</option>
             <option value="CICLICO">Escala Cíclica (Ex: 4 dias sim / 4 dias não)</option>
           </select>
         </div>
 
-        {tipo === 'SEMANAL' && (
+        {tipo === 'FIXO' && (
           <div className="form-group-dias">
             <label>Selecionar Dias:</label>
             <div className="dias-checkboxes">
-              {diasDaSemana.map((dia) => (
-                <label key={dia} className="checkbox-dia">
+              {diasDaSemana.map(({ label, valor }) => (
+                <label key={valor} className="checkbox-dia">
                   <input
                     type="checkbox"
-                    checked={diasSelecionados.includes(dia)}
-                    onChange={() => toggleDia(dia)}
+                    checked={diasSelecionados.includes(valor)}
+                    onChange={() => toggleDia(valor)}
                   />
-                  {dia}
+                  {label}
                 </label>
               ))}
             </div>
@@ -88,6 +124,26 @@ const PainelItinerario = () => {
             />
           </div>
         )}
+
+        <div className="form-group">
+          <label>Hora Início:</label>
+          <input
+            type="time"
+            value={horaInicio}
+            onChange={e => setHoraInicio(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Hora Fim:</label>
+          <input
+            type="time"
+            value={horaFim}
+            onChange={e => setHoraFim(e.target.value)}
+            required
+          />
+        </div>
 
         <div className="form-group">
           <label>Observação:</label>
