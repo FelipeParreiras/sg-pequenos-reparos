@@ -55,7 +55,7 @@ const ServicosPage = () => {
 
         <Link to="/cliente/historico">
           <button style={{ marginTop: '10px' }}>
-            Ver Serviços Concluídos
+            Histórico de Serviços
           </button>
         </Link>
 
