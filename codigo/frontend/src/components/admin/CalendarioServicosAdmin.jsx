@@ -4,7 +4,6 @@ import moment from "moment-timezone";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import ModalDetalhesServico from "../ModalDetalhesServico";
 import { getItinerario } from "../../services/itinerarioService";
-import { getUserProfile } from "../../services/authService";
 
 const localizer = momentLocalizer(moment);
 

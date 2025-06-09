@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { listarServicos } from '../services/servicoService';
+import { getUserProfile } from '../services/authService';
+import ModalDetalhesServico from '../components/ModalDetalhesServico'; // Importa o novo modal
 
 const HistoricoServicosPage = () => {
   const [servicos, setServicos] = useState([]);
@@ -7,17 +9,23 @@ const HistoricoServicosPage = () => {
   const [filtroTipo, setFiltroTipo] = useState('');
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroData, setFiltroData] = useState('');
+  const [usuario, setUsuario] = useState(null);
+  const [servicoSelecionado, setServicoSelecionado] = useState(null); // Para abrir modal
 
   useEffect(() => {
-    fetchServicos();
+    fetchDados();
   }, []);
 
-  const fetchServicos = async () => {
+  const fetchDados = async () => {
     try {
-      const response = await listarServicos();
-      setServicos(response.data);
+      const [servicoRes, usuarioRes] = await Promise.all([
+        listarServicos(),
+        getUserProfile()
+      ]);
+      setServicos(servicoRes.data);
+      setUsuario(usuarioRes);
     } catch (error) {
-      console.error('Erro ao buscar serviços:', error);
+      console.error('Erro ao buscar dados:', error);
     }
   };
 
@@ -29,11 +37,13 @@ const HistoricoServicosPage = () => {
         ? servico.tipoServico === filtroTipo
         : servico.tipoServico?.nome === filtroTipo
     ) : true;
-    const dataMatch = filtroData ? (servico.data?.includes?.(filtroData) || new Date(servico.data).toLocaleDateString().includes(filtroData)) : true;
+    const dataMatch = filtroData
+      ? (servico.data?.includes?.(filtroData) ||
+        new Date(servico.data).toLocaleDateString().includes(filtroData))
+      : true;
     return nomeMatch && statusMatch && tipoMatch && dataMatch;
   });
 
-  // Coleta os tipos únicos
   const tiposUnicos = Array.from(new Set(servicos.map(s =>
     typeof s.tipoServico === 'string' ? s.tipoServico : s.tipoServico?.nome
   )));
@@ -44,18 +54,8 @@ const HistoricoServicosPage = () => {
 
       {/* Filtros */}
       <div style={{ marginBottom: '20px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-        <input
-          type="text"
-          placeholder="Buscar por nome..."
-          value={filtroNome}
-          onChange={(e) => setFiltroNome(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Filtrar por data (dd/mm/aaaa)"
-          value={filtroData}
-          onChange={(e) => setFiltroData(e.target.value)}
-        />
+        <input type="text" placeholder="Buscar por nome..." value={filtroNome} onChange={(e) => setFiltroNome(e.target.value)} />
+        <input type="text" placeholder="Filtrar por data (dd/mm/aaaa)" value={filtroData} onChange={(e) => setFiltroData(e.target.value)} />
         <select value={filtroStatus} onChange={(e) => setFiltroStatus(e.target.value)}>
           <option value="">Todos os Status</option>
           <option value="SOLICITADO">Solicitado</option>
@@ -72,7 +72,7 @@ const HistoricoServicosPage = () => {
         </select>
       </div>
 
-      {/* Lista Filtrada */}
+      {/* Lista */}
       {servicosFiltrados.length === 0 ? (
         <p>Nenhum serviço encontrado com os filtros aplicados.</p>
       ) : (
@@ -83,9 +83,27 @@ const HistoricoServicosPage = () => {
               <p><strong>Tipo:</strong> {typeof servico.tipoServico === 'string' ? servico.tipoServico : servico.tipoServico?.nome}</p>
               <p><strong>Status:</strong> {servico.status}</p>
               <p><strong>Data:</strong> {servico.data ? new Date(servico.data).toLocaleDateString() : 'Não agendado'}</p>
+              {usuario?.tipo === 'CLIENTE' && servico.administradorNome && (
+                <p><strong>Prestador:</strong> {servico.administradorNome}</p>
+              )}
+              {usuario?.tipo === 'ADMIN' && servico.clienteNome && (
+                <p><strong>Cliente:</strong> {servico.clienteNome}</p>
+              )}
+
+              <button onClick={() => setServicoSelecionado(servico)} style={{ marginRight: '10px' }}>
+                Detalhes
+              </button>
             </li>
           ))}
         </ul>
+      )}
+
+      {servicoSelecionado && (
+        <ModalDetalhesServico
+          servico={servicoSelecionado}
+          onClose={() => setServicoSelecionado(null)}
+          usuario={usuario}
+        />
       )}
     </div>
   );

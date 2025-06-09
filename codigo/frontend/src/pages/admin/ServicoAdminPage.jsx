@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import CalendarioServicosAdmin from '../../components/admin/CalendarioServicosAdmin';
 import ListaServicosAdmin from '../../components/admin/ListaServicosAdmin';
 import { listarServicos } from '../../services/servicoService'; // 🆕
-
+import { Link } from 'react-router-dom';
 const ServicoAdminPage = () => {
   const [servicos, setServicos] = useState([]);
 
@@ -36,6 +36,11 @@ const ServicoAdminPage = () => {
           servicos={servicos}
           onServicoAtualizado={handleServicoAtualizado}
         />
+        <Link to="/cliente/historico">
+          <button style={{ marginTop: '10px' }}>
+            Histórico de Serviços
+          </button>
+        </Link>
       </div>
     </div>
   );
