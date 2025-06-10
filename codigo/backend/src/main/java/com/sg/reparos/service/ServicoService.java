@@ -13,9 +13,14 @@ import com.sg.reparos.model.Usuario;
 import com.sg.reparos.repository.ServicoRepository;
 import com.sg.reparos.repository.TipoServicoRepository;
 import com.sg.reparos.repository.UsuarioRepository;
+import com.sg.reparos.repository.NotificacaoRepository;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,15 +32,18 @@ public class ServicoService {
     private final UsuarioRepository usuarioRepository;
     private final TipoServicoRepository tipoServicoRepository;
     private final NotificacaoService notificacaoService;
+    private final NotificacaoRepository notificacaoRepository;
 
     public ServicoService(ServicoRepository servicoRepository,
-                          UsuarioRepository usuarioRepository,
-                          TipoServicoRepository tipoServicoRepository,
-                          NotificacaoService notificacaoService) {
+            UsuarioRepository usuarioRepository,
+            TipoServicoRepository tipoServicoRepository,
+            NotificacaoService notificacaoService,
+            NotificacaoRepository notificacaoRepository) {
         this.servicoRepository = servicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.tipoServicoRepository = tipoServicoRepository;
         this.notificacaoService = notificacaoService;
+        this.notificacaoRepository = notificacaoRepository;
     }
 
     public ServicoResponseDTO solicitarServico(ServicoRequestDTO dto) {
@@ -74,7 +82,8 @@ public class ServicoService {
         if (salvo.getAdministrador() != null) {
             NotificacaoRequestDTO notiAdmin = new NotificacaoRequestDTO();
             notiAdmin.setTitulo("Novo serviço solicitado");
-            notiAdmin.setMensagem("O cliente " + salvo.getCliente().getNome() + " solicitou o serviço: " + salvo.getNome());
+            notiAdmin.setMensagem(
+                    "O cliente " + salvo.getCliente().getNome() + " solicitou o serviço: " + salvo.getNome());
             notiAdmin.setAdminId(salvo.getAdministrador().getId());
             notiAdmin.setTipo(Notificacao.TipoNotificacao.SOLICITACAO);
             notificacaoService.enviar(notiAdmin);
@@ -110,11 +119,13 @@ public class ServicoService {
         Servico atualizado = servicoRepository.save(servico);
 
         notificacaoService.enviar(new NotificacaoRequestDTO("Serviço aceito e agendado",
-                "Seu serviço '" + atualizado.getNome() + "' foi aceito e agendado para " + atualizado.getData() + " às " + atualizado.getHorario(),
+                "Seu serviço '" + atualizado.getNome() + "' foi aceito e agendado para " + atualizado.getData() + " às "
+                        + atualizado.getHorario(),
                 atualizado.getCliente().getId(), null, Notificacao.TipoNotificacao.AGENDAMENTO));
 
         notificacaoService.enviar(new NotificacaoRequestDTO("Serviço agendado com sucesso",
-                "Você agendou o serviço '" + atualizado.getNome() + "' para " + atualizado.getData() + " às " + atualizado.getHorario(),
+                "Você agendou o serviço '" + atualizado.getNome() + "' para " + atualizado.getData() + " às "
+                        + atualizado.getHorario(),
                 null, administrador.getId(), Notificacao.TipoNotificacao.AGENDAMENTO));
 
         return toResponseDTO(atualizado);
@@ -142,7 +153,8 @@ public class ServicoService {
 
         notificacaoService.enviar(new NotificacaoRequestDTO("Serviço cancelado",
                 "O serviço '" + atualizado.getNome() + "' foi cancelado. Motivo: " + motivo,
-                atualizado.getCliente().getId(), atualizado.getAdministrador() != null ? atualizado.getAdministrador().getId() : null,
+                atualizado.getCliente().getId(),
+                atualizado.getAdministrador() != null ? atualizado.getAdministrador().getId() : null,
                 Notificacao.TipoNotificacao.CANCELAMENTO));
 
         return toResponseDTO(atualizado);
@@ -156,7 +168,8 @@ public class ServicoService {
 
         notificacaoService.enviar(new NotificacaoRequestDTO("Serviço concluído",
                 "O serviço '" + atualizado.getNome() + "' foi concluído.",
-                atualizado.getCliente().getId(), atualizado.getAdministrador() != null ? atualizado.getAdministrador().getId() : null,
+                atualizado.getCliente().getId(),
+                atualizado.getAdministrador() != null ? atualizado.getAdministrador().getId() : null,
                 Notificacao.TipoNotificacao.CONCLUSAO));
 
         return toResponseDTO(atualizado);
@@ -185,8 +198,10 @@ public class ServicoService {
 
         servico.setPeriodoDisponivelCliente(Periodo.valueOf(dto.getPeriodoDisponivelCliente().toUpperCase()));
 
-        if (dto.getData() != null) servico.setData(dto.getData());
-        if (dto.getHorario() != null) servico.setHorario(dto.getHorario());
+        if (dto.getData() != null)
+            servico.setData(dto.getData());
+        if (dto.getHorario() != null)
+            servico.setHorario(dto.getHorario());
         if (dto.getStatus() != null)
             servico.setStatus(StatusServico.valueOf(dto.getStatus().toUpperCase()));
 
@@ -194,10 +209,55 @@ public class ServicoService {
 
         notificacaoService.enviar(new NotificacaoRequestDTO("Serviço editado",
                 "O serviço '" + atualizado.getNome() + "' foi editado pelo administrador.",
-                atualizado.getCliente().getId(), atualizado.getAdministrador() != null ? atualizado.getAdministrador().getId() : null,
+                atualizado.getCliente().getId(),
+                atualizado.getAdministrador() != null ? atualizado.getAdministrador().getId() : null,
                 Notificacao.TipoNotificacao.EDICAO));
 
         return toResponseDTO(atualizado);
+    }
+
+    @Scheduled(fixedRate = 300000) // a cada 5 minutos
+    public void notificarServicosAgendadosProximos() {
+        System.out.println("[SCHEDULER] Rodando lembretes às: " + LocalDateTime.now());
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime limite = agora.plusHours(24);
+
+        List<Servico> agendados = servicoRepository.findByStatus(Servico.StatusServico.ACEITO).stream()
+                .filter(s -> s.getData() != null && s.getHorario() != null)
+                .filter(s -> {
+                    LocalDateTime agendamento = LocalDateTime.of(s.getData(), s.getHorario());
+                    return agendamento.isAfter(agora) && !agendamento.isAfter(limite);
+                })
+                .toList();
+
+        for (Servico s : agendados) {
+            String msg = "O serviço \"" + s.getNome() + "\" está agendado para "
+                    + s.getData() + " às " + s.getHorario();
+
+            if (!notificacaoRepository.existsByTipoAndClienteAndTitulo(Notificacao.TipoNotificacao.LEMBRETE,
+                    s.getCliente(), "Lembrete: serviço em breve")) {
+                notificacaoService.enviar(new NotificacaoRequestDTO(
+                        "Lembrete: serviço em breve",
+                        msg,
+                        s.getCliente().getId(),
+                        null,
+                        Notificacao.TipoNotificacao.LEMBRETE));
+            }
+
+            if (s.getAdministrador() != null
+                    && !notificacaoRepository.existsByTipoAndAdminAndTitulo(
+                            Notificacao.TipoNotificacao.LEMBRETE,
+                            s.getAdministrador(),
+                            "Lembrete: serviço em breve")) {
+                notificacaoService.enviar(new NotificacaoRequestDTO(
+                        "Lembrete: serviço em breve",
+                        msg,
+                        null,
+                        s.getAdministrador().getId(),
+                        Notificacao.TipoNotificacao.LEMBRETE));
+            }
+
+        }
     }
 
     public List<ServicoResponseDTO> listarTodos() {

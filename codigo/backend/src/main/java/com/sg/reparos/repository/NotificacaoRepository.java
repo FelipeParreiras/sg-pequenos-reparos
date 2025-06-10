@@ -11,4 +11,8 @@ public interface NotificacaoRepository extends JpaRepository<Notificacao, Long> 
 
     List<Notificacao> findTop3ByClienteOrAdminOrderByDataCriacaoDesc(Usuario cliente, Usuario admin);
 
+    boolean existsByTipoAndClienteAndTitulo(Notificacao.TipoNotificacao tipo, Usuario cliente, String titulo);
+
+    boolean existsByTipoAndAdminAndTitulo(Notificacao.TipoNotificacao tipo, Usuario admin, String titulo);
+
 }

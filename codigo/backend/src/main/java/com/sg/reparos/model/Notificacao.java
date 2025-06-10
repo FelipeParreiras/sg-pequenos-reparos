@@ -42,6 +42,7 @@ public class Notificacao {
         CONCLUSAO,
         CANCELAMENTO,
         EDICAO,
-        AVALIACAO
+        AVALIACAO,
+        LEMBRETE
     }
 }

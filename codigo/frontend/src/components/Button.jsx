@@ -5,7 +5,7 @@ const Button = ({ children, type = "button", variant = "default", onClick }) => 
     <button
       type={type}
       onClick={onClick}
-      className={`btn ${variant}`} // Adiciona classe dinâmica
+      className={`btn ${variant}`} 
     >
       {children}
     </button>
