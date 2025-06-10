@@ -1,9 +1,9 @@
 import React from "react";
 import "../styles/components/Label.css";
 
-const Label = ({ htmlFor, children }) => {
+const Label = ({ htmlFor, children, className = "" }) => {
   return (
-    <label htmlFor={htmlFor} className="label-component">
+    <label htmlFor={htmlFor} className={`label-component ${className}`}>
       {children}
     </label>
   );

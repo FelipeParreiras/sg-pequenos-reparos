@@ -2,10 +2,23 @@ import React from 'react';
 import '../styles/components/Input.css';
 import Label from './Label';
 
-const Input = ({ label, name, value, onChange, type = "text", required = false }) => {
+const Input = ({
+  label,
+  name,
+  value,
+  onChange,
+  type = "text",
+  required = false,
+  placeholder,
+  labelClassName = "" // NOVO
+}) => {
   return (
     <div className="input-container">
-      <Label htmlFor={name} className="input-label">{label}:</Label>
+      {label && (
+        <Label htmlFor={name} className={`input-label ${labelClassName}`}>
+          {label}:
+        </Label>
+      )}
       <input
         id={name}
         type={type}
@@ -13,7 +26,7 @@ const Input = ({ label, name, value, onChange, type = "text", required = false }
         value={value}
         onChange={onChange}
         required={required}
-        placeholder={label}
+        placeholder={placeholder || label}
         className="input-field"
       />
     </div>
