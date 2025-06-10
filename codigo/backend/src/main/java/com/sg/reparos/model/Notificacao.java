@@ -23,11 +23,13 @@ public class Notificacao {
 
     private LocalDateTime dataCriacao;
 
-    private boolean lida;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private Usuario cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destinatario_id", nullable = false)
-    private Usuario destinatario;
+    @JoinColumn(name = "admin_id")
+    private Usuario admin;
 
     @Enumerated(EnumType.STRING)
     private TipoNotificacao tipo;

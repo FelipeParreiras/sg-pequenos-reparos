@@ -24,7 +24,7 @@ public class NotificacaoController {
 
     @GetMapping("/usuario/{id}")
     public ResponseEntity<List<NotificacaoResponseDTO>> listarPorUsuario(@PathVariable Long id) {
-        return ResponseEntity.ok(notificacaoService.listarPorDestinatario(id));
+        return ResponseEntity.ok(notificacaoService.listarPorUsuario(id)); // ✅ método atualizado
     }
 
     @GetMapping("/usuario/{id}/recentes")

@@ -9,6 +9,7 @@ import lombok.Setter;
 public class NotificacaoRequestDTO {
     private String titulo;
     private String mensagem;
-    private Long destinatarioId;
+    private Long clienteId;
+    private Long adminId;
     private TipoNotificacao tipo;
 }

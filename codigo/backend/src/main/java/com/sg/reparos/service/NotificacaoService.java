@@ -20,34 +20,45 @@ public class NotificacaoService {
     private final UsuarioRepository usuarioRepository;
 
     public void enviar(NotificacaoRequestDTO dto) {
-        Usuario destinatario = usuarioRepository.findById(dto.getDestinatarioId())
-                .orElseThrow(() -> new IllegalArgumentException("Destinatário não encontrado"));
+        Usuario cliente = dto.getClienteId() != null
+                ? usuarioRepository.findById(dto.getClienteId())
+                        .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"))
+                : null;
+
+        Usuario admin = dto.getAdminId() != null
+                ? usuarioRepository.findById(dto.getAdminId())
+                        .orElseThrow(() -> new IllegalArgumentException("Admin não encontrado"))
+                : null;
 
         Notificacao notificacao = Notificacao.builder()
                 .titulo(dto.getTitulo())
                 .mensagem(dto.getMensagem())
                 .dataCriacao(LocalDateTime.now())
-                .lida(false)
-                .destinatario(destinatario)
+                .cliente(cliente)
+                .admin(admin)
                 .tipo(dto.getTipo())
                 .build();
 
         notificacaoRepository.save(notificacao);
     }
 
-    public List<NotificacaoResponseDTO> listarPorDestinatario(Long id) {
+    public List<NotificacaoResponseDTO> listarPorUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-        return notificacaoRepository.findByDestinatarioOrderByDataCriacaoDesc(usuario).stream().map(n -> {
+        List<Notificacao> notificacoes = notificacaoRepository
+                .findByClienteOrAdminOrderByDataCriacaoDesc(usuario, usuario);
+
+        return notificacoes.stream().map(n -> {
             NotificacaoResponseDTO dto = new NotificacaoResponseDTO();
             dto.setId(n.getId());
             dto.setTitulo(n.getTitulo());
             dto.setMensagem(n.getMensagem());
             dto.setDataCriacao(n.getDataCriacao());
-            dto.setLida(n.isLida());
-            dto.setDestinatarioId(n.getDestinatario().getId());
-            dto.setDestinatarioNome(n.getDestinatario().getNome());
+            dto.setClienteId(n.getCliente() != null ? n.getCliente().getId() : null);
+            dto.setClienteNome(n.getCliente() != null ? n.getCliente().getNome() : null);
+            dto.setAdminId(n.getAdmin() != null ? n.getAdmin().getId() : null);
+            dto.setAdminNome(n.getAdmin() != null ? n.getAdmin().getNome() : null);
             dto.setTipo(n.getTipo());
             return dto;
         }).toList();
@@ -57,15 +68,19 @@ public class NotificacaoService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
-        return notificacaoRepository.findTop3ByDestinatarioOrderByDataCriacaoDesc(usuario).stream().map(n -> {
+        List<Notificacao> notificacoes = notificacaoRepository
+                .findTop3ByClienteOrAdminOrderByDataCriacaoDesc(usuario, usuario);
+
+        return notificacoes.stream().map(n -> {
             NotificacaoResponseDTO dto = new NotificacaoResponseDTO();
             dto.setId(n.getId());
             dto.setTitulo(n.getTitulo());
             dto.setMensagem(n.getMensagem());
             dto.setDataCriacao(n.getDataCriacao());
-            dto.setLida(n.isLida());
-            dto.setDestinatarioId(n.getDestinatario().getId());
-            dto.setDestinatarioNome(n.getDestinatario().getNome());
+            dto.setClienteId(n.getCliente() != null ? n.getCliente().getId() : null);
+            dto.setClienteNome(n.getCliente() != null ? n.getCliente().getNome() : null);
+            dto.setAdminId(n.getAdmin() != null ? n.getAdmin().getId() : null);
+            dto.setAdminNome(n.getAdmin() != null ? n.getAdmin().getNome() : null);
             dto.setTipo(n.getTipo());
             return dto;
         }).toList();

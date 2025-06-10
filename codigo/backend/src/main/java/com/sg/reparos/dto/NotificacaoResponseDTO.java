@@ -13,8 +13,9 @@ public class NotificacaoResponseDTO {
     private String titulo;
     private String mensagem;
     private LocalDateTime dataCriacao;
-    private boolean lida;
-    private Long destinatarioId;
-    private String destinatarioNome;
+    private Long clienteId;
+    private String clienteNome;
+    private Long adminId;
+    private String adminNome;
     private TipoNotificacao tipo;
 }
