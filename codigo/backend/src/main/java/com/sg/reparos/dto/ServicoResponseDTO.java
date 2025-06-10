@@ -4,21 +4,47 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.sg.reparos.model.Servico;
+
 public class ServicoResponseDTO {
 
     private Long id;
     private String nome;
     private String descricao;
     private String tipoServico;
+    private Long clienteId;
     private String clienteNome;
     private String emailContato;
     private String telefoneContato;
     private List<String> diasDisponiveisCliente; // Lista dos dias disponíveis do cliente
-    private String periodoDisponivelCliente;     // Período disponível do cliente
+    private String periodoDisponivelCliente; // Período disponível do cliente
     private String status;
     private String administradorNome;
     private LocalDate data;
     private LocalTime horario;
+
+    // Construtor padrão
+    public ServicoResponseDTO() {
+    }
+
+    public ServicoResponseDTO(Servico servico) {
+        this.id = servico.getId();
+        this.nome = servico.getNome();
+        this.descricao = servico.getDescricao();
+        this.tipoServico = servico.getTipoServico().getNome();
+        this.clienteId = servico.getCliente().getId();
+        this.clienteNome = servico.getCliente().getNome();
+        this.emailContato = servico.getEmailContato();
+        this.telefoneContato = servico.getTelefoneContato();
+        this.diasDisponiveisCliente = servico.getDiasDisponiveisCliente().stream()
+                .map(Enum::name)
+                .toList();
+        this.periodoDisponivelCliente = servico.getPeriodoDisponivelCliente().name();
+        this.status = servico.getStatus().name();
+        this.administradorNome = servico.getAdministrador() != null ? servico.getAdministrador().getNome() : null;
+        this.data = servico.getData();
+        this.horario = servico.getHorario();
+    }
 
     // Getters e Setters
 
@@ -52,6 +78,14 @@ public class ServicoResponseDTO {
 
     public void setTipoServico(String tipoServico) {
         this.tipoServico = tipoServico;
+    }
+
+    public Long getClienteId() {
+        return clienteId;
+    }
+
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 
     public String getClienteNome() {

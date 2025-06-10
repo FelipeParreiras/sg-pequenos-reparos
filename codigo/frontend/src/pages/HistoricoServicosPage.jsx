@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { listarServicos } from '../services/servicoService';
+import { listarServicos, buscarServicoPorId } from '../services/servicoService';
 import { getUserProfile } from '../services/authService';
-import ModalDetalhesServico from '../components/ModalDetalhesServico'; // Importa o novo modal
+import ModalDetalhesServico from '../components/ModalDetalhesServico';
+import ModalEditarServico from '../components/ModalEditarServicos';
 
 const HistoricoServicosPage = () => {
   const [servicos, setServicos] = useState([]);
@@ -10,7 +11,8 @@ const HistoricoServicosPage = () => {
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroData, setFiltroData] = useState('');
   const [usuario, setUsuario] = useState(null);
-  const [servicoSelecionado, setServicoSelecionado] = useState(null); // Para abrir modal
+  const [servicoSelecionado, setServicoSelecionado] = useState(null);
+  const [modalEditar, setModalEditar] = useState(false);
 
   useEffect(() => {
     fetchDados();
@@ -47,6 +49,22 @@ const HistoricoServicosPage = () => {
   const tiposUnicos = Array.from(new Set(servicos.map(s =>
     typeof s.tipoServico === 'string' ? s.tipoServico : s.tipoServico?.nome
   )));
+
+  const handleEditar = async (servico) => {
+    try {
+      const res = await buscarServicoPorId(servico.id);
+      setServicoSelecionado(res.data);
+      setModalEditar(true);
+    } catch (err) {
+      alert("Erro ao buscar dados completos do serviço para edição.");
+      console.error(err);
+    }
+  };
+
+  const handleFecharModal = () => {
+    setServicoSelecionado(null);
+    setModalEditar(false);
+  };
 
   return (
     <div className="historico-page" style={{ padding: '20px' }}>
@@ -89,20 +107,34 @@ const HistoricoServicosPage = () => {
               {usuario?.tipo === 'ADMIN' && servico.clienteNome && (
                 <p><strong>Cliente:</strong> {servico.clienteNome}</p>
               )}
-
               <button onClick={() => setServicoSelecionado(servico)} style={{ marginRight: '10px' }}>
                 Detalhes
               </button>
+              {usuario?.tipo === 'ADMIN' && (
+                <button onClick={() => handleEditar(servico)} style={{ backgroundColor: '#007bff', color: 'white' }}>
+                  Editar
+                </button>
+              )}
             </li>
           ))}
         </ul>
       )}
 
-      {servicoSelecionado && (
+      {/* Modal de Detalhes */}
+      {servicoSelecionado && !modalEditar && (
         <ModalDetalhesServico
           servico={servicoSelecionado}
           onClose={() => setServicoSelecionado(null)}
           usuario={usuario}
+        />
+      )}
+
+      {/* Modal de Edição */}
+      {modalEditar && servicoSelecionado && (
+        <ModalEditarServico
+          servico={servicoSelecionado}
+          onClose={handleFecharModal}
+          onAtualizado={fetchDados} // ✅ nome corrigido aqui
         />
       )}
     </div>
