@@ -48,9 +48,9 @@ public class Servico {
     @Column(nullable = false)
     private Periodo periodoDisponivelCliente;
 
-    private LocalDate data;      // Data agendada (preenchida pelo admin)
+    private LocalDate data; // Data agendada (preenchida pelo admin)
 
-    private LocalTime horario;   // Horário agendado (preenchido pelo admin)
+    private LocalTime horario; // Horário agendado (preenchido pelo admin)
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -76,6 +76,9 @@ public class Servico {
     public enum Periodo {
         MANHA, TARDE, NOITE
     }
+
+    @OneToOne(mappedBy = "servico", cascade = CascadeType.ALL)
+    private Avaliacao avaliacao;
 
     public Long getId() {
         return id;
@@ -191,5 +194,4 @@ public class Servico {
 
     // Getters e Setters
 
-    
 }

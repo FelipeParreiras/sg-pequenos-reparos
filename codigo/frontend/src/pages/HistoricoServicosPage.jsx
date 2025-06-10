@@ -3,6 +3,7 @@ import { listarServicos, buscarServicoPorId } from '../services/servicoService';
 import { getUserProfile } from '../services/authService';
 import ModalDetalhesServico from '../components/ModalDetalhesServico';
 import ModalEditarServico from '../components/ModalEditarServicos';
+import ModalAvaliacaoServico from '../components/ModalAvaliacaoServico'; // ✅ NOVO
 
 const HistoricoServicosPage = () => {
   const [servicos, setServicos] = useState([]);
@@ -13,6 +14,7 @@ const HistoricoServicosPage = () => {
   const [usuario, setUsuario] = useState(null);
   const [servicoSelecionado, setServicoSelecionado] = useState(null);
   const [modalEditar, setModalEditar] = useState(false);
+  const [modalAvaliacao, setModalAvaliacao] = useState(false); // ✅ NOVO
 
   useEffect(() => {
     fetchDados();
@@ -66,6 +68,11 @@ const HistoricoServicosPage = () => {
     setModalEditar(false);
   };
 
+  const handleAvaliar = (servico) => {
+    setServicoSelecionado(servico);
+    setModalAvaliacao(true);
+  };
+
   return (
     <div className="historico-page" style={{ padding: '20px' }}>
       <h2>Histórico de Serviços</h2>
@@ -115,13 +122,18 @@ const HistoricoServicosPage = () => {
                   Editar
                 </button>
               )}
+              {usuario?.tipo === 'CLIENTE' && servico.status === 'CONCLUIDO' && (
+                <button onClick={() => handleAvaliar(servico)} style={{ backgroundColor: '#28a745', color: 'white', marginLeft: '10px' }}>
+                  Avaliar
+                </button>
+              )}
             </li>
           ))}
         </ul>
       )}
 
       {/* Modal de Detalhes */}
-      {servicoSelecionado && !modalEditar && (
+      {servicoSelecionado && !modalEditar && !modalAvaliacao && (
         <ModalDetalhesServico
           servico={servicoSelecionado}
           onClose={() => setServicoSelecionado(null)}
@@ -134,7 +146,17 @@ const HistoricoServicosPage = () => {
         <ModalEditarServico
           servico={servicoSelecionado}
           onClose={handleFecharModal}
-          onAtualizado={fetchDados} // ✅ nome corrigido aqui
+          onAtualizado={fetchDados}
+        />
+      )}
+
+      {/* ✅ Modal de Avaliação */}
+      {modalAvaliacao && servicoSelecionado && (
+        <ModalAvaliacaoServico
+          isOpen={modalAvaliacao}
+          onClose={() => setModalAvaliacao(false)}
+          servico={servicoSelecionado}
+          onAvaliado={fetchDados}
         />
       )}
     </div>
