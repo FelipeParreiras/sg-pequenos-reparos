@@ -3,6 +3,9 @@ package com.sg.reparos.service;
 import com.sg.reparos.dto.ServicoRequestDTO;
 import com.sg.reparos.dto.ServicoResponseDTO;
 import com.sg.reparos.model.Servico;
+import com.sg.reparos.model.Servico.DiaSemana;
+import com.sg.reparos.model.Servico.Periodo;
+import com.sg.reparos.model.Servico.StatusServico;
 import com.sg.reparos.model.TipoServico;
 import com.sg.reparos.model.Usuario;
 import com.sg.reparos.repository.ServicoRepository;
@@ -23,8 +26,8 @@ public class ServicoService {
     private final TipoServicoRepository tipoServicoRepository;
 
     public ServicoService(ServicoRepository servicoRepository,
-                          UsuarioRepository usuarioRepository,
-                          TipoServicoRepository tipoServicoRepository) {
+            UsuarioRepository usuarioRepository,
+            TipoServicoRepository tipoServicoRepository) {
         this.servicoRepository = servicoRepository;
         this.usuarioRepository = usuarioRepository;
         this.tipoServicoRepository = tipoServicoRepository;
@@ -36,37 +39,30 @@ public class ServicoService {
         servico.setDescricao(dto.getDescricao());
         servico.setEmailContato(dto.getEmailContato());
         servico.setTelefoneContato(dto.getTelefoneContato());
-        servico.setStatus(Servico.StatusServico.SOLICITADO);
+        servico.setStatus(StatusServico.SOLICITADO);
 
-        // Buscar Cliente
         Usuario cliente = usuarioRepository.findById(dto.getClienteId())
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        // Buscar Tipo de Serviço
         TipoServico tipoServico = tipoServicoRepository.findById(dto.getTipoServicoId())
                 .orElseThrow(() -> new RuntimeException("Tipo de serviço não encontrado"));
 
-        // Setar Cliente e Tipo de Serviço
         servico.setCliente(cliente);
         servico.setTipoServico(tipoServico);
 
-        // Converter diasDisponiveisCliente para Enum
-        List<Servico.DiaSemana> diasDisponiveis = dto.getDiasDisponiveisCliente()
-                .stream()
-                .map(dia -> Servico.DiaSemana.valueOf(dia.toUpperCase()))
+        List<DiaSemana> diasDisponiveis = dto.getDiasDisponiveisCliente().stream()
+                .map(dia -> DiaSemana.valueOf(dia.toUpperCase()))
                 .collect(Collectors.toList());
         servico.setDiasDisponiveisCliente(diasDisponiveis);
 
-        // Converter periodoDisponivelCliente para Enum
-        servico.setPeriodoDisponivelCliente(Servico.Periodo.valueOf(dto.getPeriodoDisponivelCliente().toUpperCase()));
+        servico.setPeriodoDisponivelCliente(Periodo.valueOf(dto.getPeriodoDisponivelCliente().toUpperCase()));
 
         Servico salvo = servicoRepository.save(servico);
         return toResponseDTO(salvo);
     }
 
     public List<ServicoResponseDTO> listarTodos() {
-        return servicoRepository.findAll()
-                .stream()
+        return servicoRepository.findAll().stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -77,50 +73,45 @@ public class ServicoService {
         return toResponseDTO(servico);
     }
 
-public ServicoResponseDTO aceitarServico(Long id, Long administradorId, String data, String horario) {
-    Servico servico = servicoRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+    public ServicoResponseDTO aceitarServico(Long id, Long administradorId, String data, String horario) {
+        Servico servico = servicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
 
-    Usuario administrador = usuarioRepository.findById(administradorId)
-            .orElseThrow(() -> new RuntimeException("Administrador não encontrado"));
+        Usuario administrador = usuarioRepository.findById(administradorId)
+                .orElseThrow(() -> new RuntimeException("Administrador não encontrado"));
 
-    LocalDate dataAgendada = LocalDate.parse(data);
-    LocalTime horarioAgendado = LocalTime.parse(horario);
+        LocalDate dataAgendada = LocalDate.parse(data);
+        LocalTime horarioAgendado = LocalTime.parse(horario);
 
-    // VALIDAÇÃO 1: Dia da semana
-    Servico.DiaSemana diaSemanaAgendado = converterDiaSemana(dataAgendada.getDayOfWeek().name());
+        DiaSemana diaSemanaAgendado = converterDiaSemana(dataAgendada.getDayOfWeek().name());
+        if (!servico.getDiasDisponiveisCliente().contains(diaSemanaAgendado)) {
+            throw new RuntimeException("O dia selecionado não está disponível para o cliente.");
+        }
 
-    if (!servico.getDiasDisponiveisCliente().contains(diaSemanaAgendado)) {
-        throw new RuntimeException("O dia selecionado não está disponível para o cliente.");
+        if (!validarHorarioDentroPeriodo(servico.getPeriodoDisponivelCliente(), horarioAgendado)) {
+            throw new RuntimeException("O horário selecionado não está dentro do período disponível do cliente.");
+        }
+
+        servico.setStatus(StatusServico.ACEITO);
+        servico.setAdministrador(administrador);
+        servico.setData(dataAgendada);
+        servico.setHorario(horarioAgendado);
+
+        Servico atualizado = servicoRepository.save(servico);
+        return toResponseDTO(atualizado);
     }
-
-    // VALIDAÇÃO 2: Horário dentro do período
-    if (!validarHorarioDentroPeriodo(servico.getPeriodoDisponivelCliente(), horarioAgendado)) {
-        throw new RuntimeException("O horário selecionado não está dentro do período disponível do cliente.");
-    }
-
-    // Se passou nas validações
-    servico.setStatus(Servico.StatusServico.ACEITO);
-    servico.setAdministrador(administrador);
-    servico.setData(dataAgendada);
-    servico.setHorario(horarioAgendado);
-
-    Servico atualizado = servicoRepository.save(servico);
-    return toResponseDTO(atualizado);
-}
-
 
     public ServicoResponseDTO recusarServico(Long id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-        servico.setStatus(Servico.StatusServico.RECUSADO);
+        servico.setStatus(StatusServico.RECUSADO);
         return toResponseDTO(servicoRepository.save(servico));
     }
 
     public ServicoResponseDTO cancelarServico(Long id, String motivo) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-        servico.setStatus(Servico.StatusServico.CANCELADO);
+        servico.setStatus(StatusServico.CANCELADO);
         servico.setMotivoCancelamento(motivo);
         return toResponseDTO(servicoRepository.save(servico));
     }
@@ -128,7 +119,7 @@ public ServicoResponseDTO aceitarServico(Long id, Long administradorId, String d
     public ServicoResponseDTO concluirServico(Long id) {
         Servico servico = servicoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
-        servico.setStatus(Servico.StatusServico.CONCLUIDO);
+        servico.setStatus(StatusServico.CONCLUIDO);
         return toResponseDTO(servicoRepository.save(servico));
     }
 
@@ -138,18 +129,16 @@ public ServicoResponseDTO aceitarServico(Long id, Long administradorId, String d
         dto.setNome(servico.getNome());
         dto.setDescricao(servico.getDescricao());
         dto.setTipoServico(servico.getTipoServico().getNome());
+        dto.setClienteId(servico.getCliente().getId());
         dto.setClienteNome(servico.getCliente().getNome());
         dto.setEmailContato(servico.getEmailContato());
         dto.setTelefoneContato(servico.getTelefoneContato());
 
-        // Mapear Dias Disponíveis
-        List<String> dias = servico.getDiasDisponiveisCliente()
-                .stream()
+        List<String> dias = servico.getDiasDisponiveisCliente().stream()
                 .map(Enum::name)
                 .collect(Collectors.toList());
         dto.setDiasDisponiveisCliente(dias);
 
-        // Mapear Período Disponível
         dto.setPeriodoDisponivelCliente(servico.getPeriodoDisponivelCliente().name());
 
         dto.setStatus(servico.getStatus().name());
@@ -161,38 +150,78 @@ public ServicoResponseDTO aceitarServico(Long id, Long administradorId, String d
         return dto;
     }
 
-    private Servico.DiaSemana converterDiaSemana(String dayOfWeek) {
-    switch (dayOfWeek) {
-        case "MONDAY":
-            return Servico.DiaSemana.SEGUNDA;
-        case "TUESDAY":
-            return Servico.DiaSemana.TERCA;
-        case "WEDNESDAY":
-            return Servico.DiaSemana.QUARTA;
-        case "THURSDAY":
-            return Servico.DiaSemana.QUINTA;
-        case "FRIDAY":
-            return Servico.DiaSemana.SEXTA;
-        case "SATURDAY":
-            return Servico.DiaSemana.SABADO;
-        case "SUNDAY":
-            return Servico.DiaSemana.DOMINGO;
-        default:
-            throw new IllegalArgumentException("Dia da semana inválido.");
+    private DiaSemana converterDiaSemana(String dayOfWeek) {
+        return switch (dayOfWeek) {
+            case "MONDAY" -> DiaSemana.SEGUNDA;
+            case "TUESDAY" -> DiaSemana.TERCA;
+            case "WEDNESDAY" -> DiaSemana.QUARTA;
+            case "THURSDAY" -> DiaSemana.QUINTA;
+            case "FRIDAY" -> DiaSemana.SEXTA;
+            case "SATURDAY" -> DiaSemana.SABADO;
+            case "SUNDAY" -> DiaSemana.DOMINGO;
+            default -> throw new IllegalArgumentException("Dia da semana inválido.");
+        };
     }
-}
 
-private boolean validarHorarioDentroPeriodo(Servico.Periodo periodoCliente, LocalTime horario) {
-    switch (periodoCliente) {
-        case MANHA:
-            return horario.isAfter(LocalTime.of(5, 59)) && horario.isBefore(LocalTime.of(12, 0));
-        case TARDE:
-            return horario.isAfter(LocalTime.of(11, 59)) && horario.isBefore(LocalTime.of(18, 0));
-        case NOITE:
-            return horario.isAfter(LocalTime.of(17, 59)) && horario.isBefore(LocalTime.of(23, 59));
-        default:
-            return false;
+    private boolean validarHorarioDentroPeriodo(Periodo periodoCliente, LocalTime horario) {
+        return switch (periodoCliente) {
+            case MANHA -> horario.isAfter(LocalTime.of(5, 59)) && horario.isBefore(LocalTime.of(12, 0));
+            case TARDE -> horario.isAfter(LocalTime.of(11, 59)) && horario.isBefore(LocalTime.of(18, 0));
+            case NOITE -> horario.isAfter(LocalTime.of(17, 59)) && horario.isBefore(LocalTime.of(23, 59));
+        };
     }
-}
 
+    public ServicoResponseDTO editarServico(Long id, ServicoRequestDTO dto) {
+        System.out.println("Editando serviço ID: " + id);
+        System.out.println("DTO recebido: " + dto);
+
+        Servico servico = servicoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+
+        servico.setNome(dto.getNome());
+        servico.setDescricao(dto.getDescricao());
+
+        TipoServico tipo = tipoServicoRepository.findById(dto.getTipoServicoId())
+                .orElseThrow(() -> new RuntimeException("Tipo de serviço não encontrado"));
+        servico.setTipoServico(tipo);
+
+        if (dto.getClienteId() == null) {
+            throw new IllegalArgumentException("O ID do cliente (clienteId) não pode ser nulo na edição do serviço.");
+        }
+        Usuario cliente = usuarioRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId()));
+        servico.setCliente(cliente);
+        System.out.println("Serviço atualizado com cliente ID: " + cliente.getId());
+
+        servico.setEmailContato(dto.getEmailContato());
+        servico.setTelefoneContato(dto.getTelefoneContato());
+
+        List<DiaSemana> dias = dto.getDiasDisponiveisCliente().stream()
+                .map(String::toUpperCase)
+                .map(DiaSemana::valueOf)
+                .collect(Collectors.toList());
+
+        try {
+            servico.setPeriodoDisponivelCliente(Periodo.valueOf(dto.getPeriodoDisponivelCliente().toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Período inválido: " + dto.getPeriodoDisponivelCliente());
+        }
+
+        if (dto.getData() != null) {
+            servico.setData(dto.getData());
+        }
+        if (dto.getHorario() != null) {
+            servico.setHorario(dto.getHorario());
+        }
+        if (dto.getStatus() != null) {
+            try {
+                servico.setStatus(StatusServico.valueOf(dto.getStatus().toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Status inválido: " + dto.getStatus());
+            }
+        }
+
+        servicoRepository.save(servico);
+        return new ServicoResponseDTO(servico);
+    }
 }

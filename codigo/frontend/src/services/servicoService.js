@@ -31,6 +31,9 @@ const cancelarServico = (id, motivo) =>
 // Concluir serviço
 const concluirServico = (id) => api.put(`/servicos/${id}/concluir`);
 
+// Atualizar serviço
+const atualizarServico = (id, dados) => api.put(`/servicos/${id}`, dados);
+
 export {
   listarServicos,
   buscarServicoPorId,
@@ -38,5 +41,6 @@ export {
   aceitarServico,
   recusarServico,
   cancelarServico,
-  concluirServico
+  concluirServico,
+  atualizarServico
 };
