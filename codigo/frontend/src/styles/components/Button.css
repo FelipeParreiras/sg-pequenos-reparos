@@ -138,7 +138,7 @@
 }
 
 .btn-cancelar:hover {
-  background-color: #d32f2f;
+  background-color: #701e1e;
 }
 
 /* Botão Avaliar */
@@ -174,4 +174,44 @@
 .btn-link-button:hover {
   background-color: #FFA500;
   color: white;
+}
+
+/* Botão de aceitar */
+.btn-aceitar {
+  background-color: #229251; /* verde claro */
+  color: white;
+}
+
+.btn-aceitar:hover {
+  background-color: #1d8147; /* verde escuro */
+}
+
+/* Botão de recusar */
+.btn-recusar {
+  background-color: #c0392b; /* vermelho escuro */
+  color: white;
+}
+
+.btn-recusar:hover {
+  background-color: #e74c3c; /* vermelho claro */
+}
+
+/* Botão de concluir */
+.btn-concluir {
+  background-color: #003366; /* azul escuro */
+  color: white;
+}
+
+.btn-concluir:hover {
+  background-color: #005fa3; /* azul médio */
+}
+
+/* Botão de cancelar */
+.btn-cancelar {
+  background-color: #b22222;
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background-color: #d32f2f;
 }
