@@ -11,6 +11,7 @@ import ServicosPage from "./pages/ServicosPage";
 import HistoricoServicosPage from "./pages/HistoricoServicosPage";
 import ServicoAdminPage from "./pages/admin/ServicoAdminPage";
 import NotificacoesPage from "./pages/NotificacoesPage";
+import './styles/global.css';
 
 function App() {
   return (
