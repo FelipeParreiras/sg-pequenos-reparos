@@ -2,8 +2,12 @@ package com.sg.reparos.controller;
 
 import com.sg.reparos.dto.AvaliacaoRequestDTO;
 import com.sg.reparos.dto.AvaliacaoResponseDTO;
+import com.sg.reparos.model.Avaliacao;
 import com.sg.reparos.service.AvaliacaoService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,4 +23,11 @@ public class AvaliacaoController {
         AvaliacaoResponseDTO response = avaliacaoService.avaliarServico(dto);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping
+    public ResponseEntity<List<AvaliacaoResponseDTO>> listarTodas() {
+        List<AvaliacaoResponseDTO> dtos = avaliacaoService.listarTodas();
+        return ResponseEntity.ok(dtos);
+    }
+
 }

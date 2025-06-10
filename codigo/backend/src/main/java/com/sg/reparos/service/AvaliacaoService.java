@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -57,4 +58,19 @@ public class AvaliacaoService {
 
         return response;
     }
+
+    public List<AvaliacaoResponseDTO> listarTodas() {
+        return avaliacaoRepository.findAll().stream().map(av -> {
+            AvaliacaoResponseDTO dto = new AvaliacaoResponseDTO();
+            dto.setId(av.getId());
+            dto.setNota(av.getNota());
+            dto.setComentario(av.getComentario());
+            dto.setDataAvaliacao(av.getDataAvaliacao());
+            dto.setServicoId(av.getServico().getId());
+            dto.setClienteId(av.getCliente().getId());
+            dto.setClienteNome(av.getCliente().getNome());
+            return dto;
+        }).toList();
+    }
+
 }
