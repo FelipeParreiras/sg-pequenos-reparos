@@ -10,6 +10,7 @@ import PainelAdmin from "./pages/admin/PainelAdmin";
 import ServicosPage from "./pages/ServicosPage";
 import HistoricoServicosPage from "./pages/HistoricoServicosPage";
 import ServicoAdminPage from "./pages/admin/ServicoAdminPage";
+import NotificacoesPage from "./pages/NotificacoesPage";
 
 function App() {
   return (
@@ -58,6 +59,23 @@ function App() {
               <PrivateRoute>
                 <HistoricoServicosPage />
               </PrivateRoute>
+            }
+          />
+          <Route
+            path="/notificacoes"
+            element={
+              <PrivateRoute>
+                <NotificacoesPage />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <div style={{ padding: "20px" }}>
+                <h2>Página não encontrada</h2>
+                <p>Desculpe, a página que você está procurando não existe.</p>
+              </div>
             }
           />
         </Routes>
