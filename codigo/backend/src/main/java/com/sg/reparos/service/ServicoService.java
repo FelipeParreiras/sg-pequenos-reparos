@@ -216,9 +216,10 @@ public class ServicoService {
         return toResponseDTO(atualizado);
     }
 
-    @Scheduled(fixedRate = 300000) // a cada 5 minutos
+    @Scheduled(fixedRate = 60000) // a cada 1 minuto (60.000 ms)
     public void notificarServicosAgendadosProximos() {
         System.out.println("[SCHEDULER] Rodando lembretes às: " + LocalDateTime.now());
+
         LocalDateTime agora = LocalDateTime.now();
         LocalDateTime limite = agora.plusHours(24);
 
@@ -234,8 +235,11 @@ public class ServicoService {
             String msg = "O serviço \"" + s.getNome() + "\" está agendado para "
                     + s.getData() + " às " + s.getHorario();
 
-            if (!notificacaoRepository.existsByTipoAndClienteAndTitulo(Notificacao.TipoNotificacao.LEMBRETE,
-                    s.getCliente(), "Lembrete: serviço em breve")) {
+            boolean lembreteClienteJaEnviado = notificacaoRepository
+                    .existsByTipoAndClienteAndTitulo(Notificacao.TipoNotificacao.LEMBRETE, s.getCliente(),
+                            "Lembrete: serviço em breve");
+
+            if (!lembreteClienteJaEnviado) {
                 notificacaoService.enviar(new NotificacaoRequestDTO(
                         "Lembrete: serviço em breve",
                         msg,
@@ -244,19 +248,20 @@ public class ServicoService {
                         Notificacao.TipoNotificacao.LEMBRETE));
             }
 
-            if (s.getAdministrador() != null
-                    && !notificacaoRepository.existsByTipoAndAdminAndTitulo(
-                            Notificacao.TipoNotificacao.LEMBRETE,
-                            s.getAdministrador(),
-                            "Lembrete: serviço em breve")) {
-                notificacaoService.enviar(new NotificacaoRequestDTO(
-                        "Lembrete: serviço em breve",
-                        msg,
-                        null,
-                        s.getAdministrador().getId(),
-                        Notificacao.TipoNotificacao.LEMBRETE));
-            }
+            if (s.getAdministrador() != null) {
+                boolean lembreteAdminJaEnviado = notificacaoRepository
+                        .existsByTipoAndAdminAndTitulo(Notificacao.TipoNotificacao.LEMBRETE, s.getAdministrador(),
+                                "Lembrete: serviço em breve");
 
+                if (!lembreteAdminJaEnviado) {
+                    notificacaoService.enviar(new NotificacaoRequestDTO(
+                            "Lembrete: serviço em breve",
+                            msg,
+                            null,
+                            s.getAdministrador().getId(),
+                            Notificacao.TipoNotificacao.LEMBRETE));
+                }
+            }
         }
     }
 
